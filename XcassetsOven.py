@@ -352,7 +352,7 @@ def main(argv):
 
     try:
         opts, args = getopt.getopt(argv,
-            "ho:c:p:i",
+            "ho:c:p:i:",
             ["output=","create-xcassets=","parse-xcassets=","info-file="])
     except getopt.GetoptError:
         print 'error: parse.py wrong command'
@@ -372,6 +372,17 @@ def main(argv):
         elif opt in ("-i", "--info-file"):
             info_file = arg
         
+    if images_dir is not None:
+        images_dir = os.path.abspath(os.path.normpath(images_dir))
+    if result_dir is not None:
+        result_dir = os.path.abspath(os.path.normpath(result_dir))
+    if info_file is not None:
+        info_file = os.path.abspath(os.path.normpath(info_file))
+
+    print "source_dir = " + str(images_dir)
+    print "output = " + str(result_dir)
+    print "info file = " + str(info_file)
+
     if command == "c":
         info_map = read_info_map(info_file)
         contents_map = {}
