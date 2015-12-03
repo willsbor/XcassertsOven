@@ -325,7 +325,7 @@ def write_info_map(a_filepath, a_info_map):
     f = io.open(a_filepath, 'wb')
     for info_key in iter(a_info_map):
         info = a_info_map[info_key]
-        f.write("" + "ok" + ", " + info_key + ", " + info['set'] + ", " + info['type'] + ", " + json.dumps(info['images']) + "\n")
+        f.write("" + "ok" + ", " + info_key + ", " + info['set'] + ", " + info['type'] + ", " + json.dumps(info['images'], sort_keys=True) + "\n")
     f.close()
 
 def json_dict_for_file_path(file_path):
