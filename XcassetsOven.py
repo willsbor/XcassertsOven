@@ -371,7 +371,7 @@ def main(argv):
             result_dir = arg
         elif opt in ("-i", "--info-file"):
             info_file = arg
-        
+
     if images_dir is not None:
         images_dir = os.path.abspath(os.path.normpath(images_dir))
     if result_dir is not None:
