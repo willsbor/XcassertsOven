@@ -89,7 +89,7 @@ def _info_by_size(filename, idiom, size, scale):
     return {'filename': filename, 'idiom': idiom, 'size': "" + str(size / scale) + "x" + str(size / scale), 'scale': "" + str(scale) + "x"}
 
 def _sort_json_key(items):
-    sort_order = ['idiom', 'scale', 'filename', 'orientation', 'subtype', 'extent', 'minimum-system-version', 'size']
+    sort_order = ['idiom', 'filename', 'scale' , 'orientation', 'subtype', 'extent', 'minimum-system-version', 'size', 'resizing']
     items_ordered = [OrderedDict(sorted(items.iteritems(), key=lambda (k, v): sort_order.index(k))) 
                     for item in items]
     return items_ordered
@@ -330,7 +330,7 @@ def read_info_map(a_filepath):
                 infos_map[infos[1]]["state"] = infos[0]
                 infos_map[infos[1]]["set"] = infos[2]
                 infos_map[infos[1]]["type"] = infos[3]
-                infos_map[infos[1]]["images"] = json.loads(infos[4], object_hook=ascii_encode_dict) #
+                infos_map[infos[1]]["images"] = json.loads(infos[4]) #, object_hook=ascii_encode_dict
             else:
                 print "false : [" + str(len(infos)) + "]" + line
     return infos_map
@@ -360,7 +360,9 @@ def create_contents_files(a_contents_map):
     for path in iter(a_contents_map):
         content = a_contents_map[path]
         if 'images' in content:
-            _sort_json_key_in_list(content['images'])
+            print "11 = " + str(content['images'])
+            content['images'] = _sort_json_key_in_list(content['images'])
+            print "22 = " + str(content['images'])
         write_dict_to_file_path(path, content)
 
 def main(argv):
