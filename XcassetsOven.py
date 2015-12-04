@@ -88,15 +88,22 @@ def init_content(a_type):
 def _info_by_size(filename, idiom, size, scale):
     return {'filename': filename, 'idiom': idiom, 'size': "" + str(size / scale) + "x" + str(size / scale), 'scale': "" + str(scale) + "x"}
 
+def _sort_json_key(items):
+    sort_order = ['idiom', 'scale', 'filename', 'orientation', 'subtype', 'extent', 'minimum-system-version', 'size']
+    items_ordered = [OrderedDict(sorted(items.iteritems(), key=lambda (k, v): sort_order.index(k))) 
+                    for item in items]
+    return items_ordered
+
+def _sort_json_key_in_list(a_list):
+    for info in a_list:
+        info = _sort_json_key(info)
+    return a_list
+
 def init_infos_content(a_type, a_filename, a_path):
     infos = []
     
     if a_type == 'imageset':
-        sort_order = ['idiom', 'scale', 'filename', 'A10']
-        items = {'filename': a_filename, 'idiom': 'universal', 'scale': guess_scale_by_filename(a_filename)}
-        items_ordered = [OrderedDict(sorted(item.iteritems(), key=lambda (k, v): sort_order.index(k)))
-                    for item in items]
-        infos.append(items_ordered)
+        infos.append({'filename': a_filename, 'idiom': 'universal', 'scale': guess_scale_by_filename(a_filename)})
     elif a_type == 'appiconset':
         im = Image.open(a_path)
         xsize, ysize = im.size
@@ -161,6 +168,8 @@ def append_infos_into_content(a_sub_images, a_main_images, a_type):
     # - appiconset:  size + scale + idiom 
     # - launchimage: subtype scale orientation
 
+    print "a_sub_images = " + str(a_sub_images)
+    print "a_main_images = " + str(a_main_images)
     for info in a_sub_images:
         ishit = False
         for m_info in a_main_images:
@@ -178,7 +187,7 @@ def append_infos_into_content(a_sub_images, a_main_images, a_type):
         if ishit:
             raise XcassetsOvenErrorException({"message": "duplicate setting for contents.json", "info": json.dumps(info), "main_images": json.dumps( a_main_images)})
         else:
-            a_main_images.append(dict(info))
+            a_main_images.append(info)
 
 def create_xcassets_by_images(a_input_dir, a_result_dir, a_info_map, a_contents_map):
     if os.path.exists(a_result_dir):
@@ -302,6 +311,10 @@ def parse_xcassets(a_input_dir, a_result_dir, info_file):
 
     write_info_map(info_file, info_map)
 
+def ascii_encode_dict(data):
+    ascii_encode = lambda x: x.encode('ascii')
+    return dict(map(ascii_encode, pair) for pair in data.items())
+
 def read_info_map(a_filepath):
     if not os.path.exists(a_filepath):
         return {}
@@ -317,7 +330,7 @@ def read_info_map(a_filepath):
                 infos_map[infos[1]]["state"] = infos[0]
                 infos_map[infos[1]]["set"] = infos[2]
                 infos_map[infos[1]]["type"] = infos[3]
-                infos_map[infos[1]]["images"] = json.loads(infos[4])
+                infos_map[infos[1]]["images"] = json.loads(infos[4], object_hook=ascii_encode_dict) #
             else:
                 print "false : [" + str(len(infos)) + "]" + line
     return infos_map
@@ -330,12 +343,12 @@ def write_info_map(a_filepath, a_info_map):
     f = io.open(a_filepath, 'wb')
     for info_key in iter(a_info_map):
         info = a_info_map[info_key]
-        f.write("" + "ok" + ", " + info_key + ", " + info['set'] + ", " + info['type'] + ", " + json.dumps(info['images'], sort_keys=True) + "\n")
+        f.write("" + "ok" + ", " + info_key + ", " + info['set'] + ", " + info['type'] + ", " + json.dumps(_sort_json_key_in_list(info['images'])) + "\n")
     f.close()
 
 def json_dict_for_file_path(file_path):
     if os.path.exists(file_path):
-        return json.load(open(file_path, 'r'))
+        return json.load(open(file_path, 'r')) # , object_hook=ascii_encode_dict
     return None
 
 def write_dict_to_file_path(file_path, info):
@@ -346,6 +359,8 @@ def write_dict_to_file_path(file_path, info):
 def create_contents_files(a_contents_map):
     for path in iter(a_contents_map):
         content = a_contents_map[path]
+        if 'images' in content:
+            _sort_json_key_in_list(content['images'])
         write_dict_to_file_path(path, content)
 
 def main(argv):
