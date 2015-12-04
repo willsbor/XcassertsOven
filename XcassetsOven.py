@@ -6,6 +6,7 @@ import io
 import json
 import shutil
 from PIL import Image
+from collections import OrderedDict
 
 class XcassetsOvenErrorException(Exception):
     pass
@@ -91,7 +92,11 @@ def init_infos_content(a_type, a_filename, a_path):
     infos = []
     
     if a_type == 'imageset':
-        infos.append({'filename': a_filename, 'idiom': 'universal', 'scale': guess_scale_by_filename(a_filename)})
+        sort_order = ['idiom', 'scale', 'filename', 'A10']
+        items = {'filename': a_filename, 'idiom': 'universal', 'scale': guess_scale_by_filename(a_filename)}
+        items_ordered = [OrderedDict(sorted(item.iteritems(), key=lambda (k, v): sort_order.index(k)))
+                    for item in items]
+        infos.append(items_ordered)
     elif a_type == 'appiconset':
         im = Image.open(a_path)
         xsize, ysize = im.size
@@ -224,8 +229,8 @@ def create_xcassets_by_images(a_input_dir, a_result_dir, a_info_map, a_contents_
             for info in infos:
                 if a_info_map[filename]['images'] is None:
                     a_info_map[filename]['images'] = []
-                a_info_map[filename]['images'].append(dict(info))
-                content['images'].append(dict(info))
+                a_info_map[filename]['images'].append(info)
+                content['images'].append(info)
 
         # TODO: add more type or resize image if it lose
 
