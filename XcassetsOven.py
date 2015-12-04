@@ -50,7 +50,7 @@ def init_content(a_type):
     author = 'xcode'
     if a_type == 'imageset':
         return {
-            'images': [],
+            'images': [{'idiom': 'universal', 'scale': '1x'}, {'idiom': 'universal', 'scale': '2x'}, {'idiom': 'universal', 'scale': '3x'}],
             'info': {
                 'version': 1,
                 'author': author,
@@ -89,9 +89,11 @@ def _info_by_size(filename, idiom, size, scale):
     return {'filename': filename, 'idiom': idiom, 'size': "" + str(size / scale) + "x" + str(size / scale), 'scale': "" + str(scale) + "x"}
 
 def _sort_json_key(items):
-    sort_order = ['idiom', 'filename', 'scale' , 'orientation', 'subtype', 'extent', 'minimum-system-version', 'size', 'resizing']
-    items_ordered = [OrderedDict(sorted(items.iteritems(), key=lambda (k, v): sort_order.index(k))) 
-                    for item in items]
+    #print "items = " + str(items)
+    sort_order = ['idiom', 'scale', 'filename', 'orientation', 'subtype', 'extent', 'minimum-system-version', 'size', 'resizing']
+    items_ordered = OrderedDict(sorted(items.iteritems(), key=lambda (k, v): sort_order.index(k)))
+    #items_ordered = sorted(items.items(), key=lambda kv: kv[0])
+    #print "items_ordered = " + str(items_ordered)
     return items_ordered
 
 def _sort_json_key_in_list(a_list):
@@ -168,8 +170,6 @@ def append_infos_into_content(a_sub_images, a_main_images, a_type):
     # - appiconset:  size + scale + idiom 
     # - launchimage: subtype scale orientation
 
-    print "a_sub_images = " + str(a_sub_images)
-    print "a_main_images = " + str(a_main_images)
     for info in a_sub_images:
         ishit = False
         for m_info in a_main_images:
@@ -177,15 +177,20 @@ def append_infos_into_content(a_sub_images, a_main_images, a_type):
                 if info['scale'] == m_info['scale'] and info['orientation'] == m_info['orientation']:
                     if 'subtype' in info and info['subtype'] == m_info['subtype']:
                         ishit = True
-            elif info['idiom'] == m_info['idiom'] and info['scale'] == m_info['scale']:
-                if 'size' in info:
-                    if info['size'] == m_info['size']:
-                        ishit = True
-                else:
+                        break
+            elif 'imageset' == a_type:
+                if info['idiom'] == m_info['idiom'] and info['scale'] == m_info['scale']:
                     ishit = True
+                    break
+            elif 'appiconset' == a_type:
+                if info['idiom'] == m_info['idiom'] and info['scale'] == m_info['scale'] and info['size'] == m_info['size']:
+                    ishit = True
+                    break
 
         if ishit:
-            raise XcassetsOvenErrorException({"message": "duplicate setting for contents.json", "info": json.dumps(info), "main_images": json.dumps( a_main_images)})
+            #raise XcassetsOvenErrorException({"message": "duplicate setting for contents.json", "info": json.dumps(info), "main_images": json.dumps( a_main_images)})
+            for key in iter(info):
+                m_info[key] = info[key]
         else:
             a_main_images.append(info)
 
@@ -219,27 +224,20 @@ def create_xcassets_by_images(a_input_dir, a_result_dir, a_info_map, a_contents_
             a_info_map[filename]['state'] = 'once'
             a_info_map[filename]['type'] = set_type
             a_info_map[filename]['set'] = set_name
-            a_info_map[filename]['images'] = None
+            a_info_map[filename]['images'] = init_infos_content(set_type, filename, path)
 
         set_content_file = a_result_dir + "/" + category_path + ".xcassets" + "/" + "Contents.json"
         if set_content_file not in a_contents_map:
            a_contents_map[set_content_file] = init_content('xcassets')
 
+        # Contents.json
         content_file = a_result_dir + "/" + category_path + ".xcassets" + "/" + set_name + "." + set_type + "/Contents.json"
         if content_file not in a_contents_map:
             a_contents_map[content_file] = init_content(set_type)
         content = a_contents_map[content_file]
 
-
-        if filename in a_info_map and a_info_map[filename]['images']:
-            append_infos_into_content(a_info_map[filename]['images'], content['images'], set_type)
-        else:
-            infos = init_infos_content(set_type, filename, path)
-            for info in infos:
-                if a_info_map[filename]['images'] is None:
-                    a_info_map[filename]['images'] = []
-                a_info_map[filename]['images'].append(info)
-                content['images'].append(info)
+        # add image info into Contents.json
+        append_infos_into_content(a_info_map[filename]['images'], content['images'], set_type)
 
         # TODO: add more type or resize image if it lose
 
@@ -360,9 +358,7 @@ def create_contents_files(a_contents_map):
     for path in iter(a_contents_map):
         content = a_contents_map[path]
         if 'images' in content:
-            print "11 = " + str(content['images'])
             content['images'] = _sort_json_key_in_list(content['images'])
-            print "22 = " + str(content['images'])
         write_dict_to_file_path(path, content)
 
 def main(argv):
