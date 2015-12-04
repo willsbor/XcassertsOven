@@ -58,7 +58,116 @@ def init_content(a_type):
         }
     elif a_type == 'appiconset':
         return {
-            'images': [],
+            'images': [{
+      "size" : "29x29",
+      "idiom" : "iphone",
+      "scale" : "2x"
+    },
+    {
+      "size" : "29x29",
+      "idiom" : "iphone",
+      "scale" : "3x"
+    },
+    {
+      "size" : "40x40",
+      "idiom" : "iphone",
+      "scale" : "2x"
+    },
+    {
+      "size" : "40x40",
+      "idiom" : "iphone",
+      "scale" : "3x"
+    },
+    {
+      "size" : "60x60",
+      "idiom" : "iphone",
+      "scale" : "2x"
+    },
+    {
+      "size" : "60x60",
+      "idiom" : "iphone",
+      "scale" : "3x"
+    },
+    {
+      "size" : "29x29",
+      "idiom" : "ipad",
+      "scale" : "1x"
+    },
+    {
+      "size" : "29x29",
+      "idiom" : "ipad",
+      "scale" : "2x"
+    },
+    {
+      "size" : "40x40",
+      "idiom" : "ipad",
+      "scale" : "1x"
+    },
+    {
+      "size" : "40x40",
+      "idiom" : "ipad",
+      "scale" : "2x"
+    },
+    {
+      "size" : "76x76",
+      "idiom" : "ipad",
+      "scale" : "1x"
+    },
+    {
+      "size" : "76x76",
+      "idiom" : "ipad",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "16x16",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "16x16",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "32x32",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "32x32",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "128x128",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "128x128",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "256x256",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "mac",
+      "size" : "256x256",
+      "scale" : "2x"
+    },
+    {
+      "size" : "512x512",
+      "idiom" : "mac",
+      "scale" : "1x"
+    },
+    {
+      "size" : "512x512",
+      "idiom" : "mac",
+      "scale" : "2x"
+    }],
             'info': {
                 'version': 1,
                 'author': author,
@@ -69,7 +178,37 @@ def init_content(a_type):
         }
     elif a_type == 'launchimage':
         return {
-            'images': [],
+            'images': [{
+      "extent" : "full-screen",
+      "idiom" : "iphone",
+      "subtype" : "736h",
+      "minimum-system-version" : "8.0",
+      "orientation" : "portrait",
+      "scale" : "3x"
+    },
+    {
+      "extent" : "full-screen",
+      "idiom" : "iphone",
+      "subtype" : "667h",
+      "minimum-system-version" : "8.0",
+      "orientation" : "portrait",
+      "scale" : "2x"
+    },
+    {
+      "orientation" : "portrait",
+      "idiom" : "iphone",
+      "extent" : "full-screen",
+      "minimum-system-version" : "7.0",
+      "scale" : "2x"
+    },
+    {
+      "extent" : "full-screen",
+      "idiom" : "iphone",
+      "subtype" : "retina4",
+      "minimum-system-version" : "7.0",
+      "orientation" : "portrait",
+      "scale" : "2x"
+    }],
             'info': {
                 'version': 1,
                 'author': author,
@@ -90,7 +229,7 @@ def _info_by_size(filename, idiom, size, scale):
 
 def _sort_json_key(items):
     #print "items = " + str(items)
-    sort_order = ['idiom', 'filename', 'scale', 'orientation', 'subtype', 'extent', 'minimum-system-version', 'size', 'resizing']
+    sort_order = ['size', 'extent', 'idiom', 'subtype', 'filename', 'scale', 'minimum-system-version', 'orientation', 'resizing']
     items_ordered = OrderedDict(sorted(items.iteritems(), key=lambda (k, v): sort_order.index(k)))
     #items_ordered = sorted(items.items(), key=lambda kv: kv[0])
     #print "items_ordered = " + str(items_ordered)
@@ -178,7 +317,7 @@ def append_infos_into_content(a_sub_images, a_main_images, a_type):
         for m_info in a_main_images:
             if 'launchimage' == a_type:
                 if info['scale'] == m_info['scale'] and info['orientation'] == m_info['orientation']:
-                    if 'subtype' in info and info['subtype'] == m_info['subtype']:
+                    if 'subtype' in info and 'subtype' in m_info and info['subtype'] == m_info['subtype']:
                         ishit = True
                         break
             elif 'imageset' == a_type:
