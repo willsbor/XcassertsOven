@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>409.2</string>
+	<key>AMApplicationVersion</key>
+	<string>2.5</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>1.0.2</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run AppleScript.action</string>
+				<key>ActionName</key>
+				<string>執行 AppleScript</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>source</key>
+					<string>on run {input, parameters}	set cmd to "security find-generic-password -s 'AutoPullRequest' | grep 'acct' | sed -e 's/.*=\"\\(.*\\)\"/\\1/' &amp;&amp; echo \"null\""		set account to do shell script cmd		if (account = "null") then		#display dialog "returnValue = [" &amp; returnValue &amp; "]"		display dialog "GitHub Account?" default answer ""		set account to text returned of result		display dialog "the Password of GitHub Account?" default answer ""		set pwd to text returned of result				set cmd to "security add-generic-password"		set cmd to cmd &amp; " -a " &amp; account		set cmd to cmd &amp; " -l 'AutoPullRequest'"		set cmd to cmd &amp; " -s AutoPullRequest"		set cmd to cmd &amp; " -w " &amp; pwd		#set cmd to cmd &amp; " -A"			do shell script cmd	else		set cmd to "security find-generic-password -s 'AutoPullRequest' -w"		set pwd to do shell script cmd	end if		#display dialog "account is " &amp; account &amp; " pwd is " &amp; pwd		display dialog "the message of this commit?" default answer ""	set commit_message to text returned of result	if (commit_message = "") then		display dialog "Should have some commit message!!"		return input	end if		#tell application "Finder" to set theseItems to every file of folder (choose folder with prompt "Pick the folder containing the files to process:")	set foldersList to choose folder with prompt "Select Images"		set sourcePosixDir to POSIX path of foldersList	# display dialog "foldersList = " &amp; sourcePosixDir		#set PROJECT_GIT_REPO to "https://github.com/willsbor/AutoRepoTest.git"	#set PROJECT_GIT_BRANCH to "master"		#tell application "Finder" to set currentDir to POSIX path of ((target of front Finder window) as text)	tell application "Finder"		set currentDir to POSIX path of (path to me as text)	end tell	display dialog "currentDir = " &amp; currentDir		# create workspace	do shell script "cd \"" &amp; currentDir &amp; "\" &amp;&amp; " &amp; "python AutoPullRequest.py -c /tmp/autopullrequest.workspace"	# set workspace_dir to "/tmp/autopullrequest.workspace"	#do shell script "rm -rf " &amp; workspace_dir	#do shell script "mkdir " &amp; workspace_dir	#do shell script "cd " &amp; workspace_dir	#set returnValue to do shell script "pwd"	#display dialog returnValue	#set errcode to do shell script "cd " &amp; workspace_dir &amp; " &amp;&amp; " &amp; "git clone " &amp; PROJECT_GIT_REPO &amp; " --branch " &amp; PROJECT_GIT_BRANCH &amp; " --single-branch . &amp;&amp; echo \"null\""	#if (errcode = "null") then	#	do shell script "cd " &amp; workspace_dir &amp; " &amp;&amp; " &amp; "git reset --hard HEAD"	#	do shell script "cd " &amp; workspace_dir &amp; " &amp;&amp; " &amp; "git pull origin " &amp; PROJECT_GIT_BRANCH	#end if			do shell script "cd \"" &amp; currentDir &amp; "\" &amp;&amp; " &amp; "python AutoPullRequest.py -w /tmp/autopullrequest.workspace -u \"" &amp; sourcePosixDir &amp; "\""			set errormessage to do shell script "cd \"" &amp; currentDir &amp; "\" &amp;&amp; " &amp; "python AutoPullRequest.py -w /tmp/autopullrequest.workspace -r \"" &amp; commit_message &amp; "\" -a " &amp; account &amp; " -pw " &amp; pwd	display dialog errormessage		return inputend run</string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.Automator.RunScript</string>
+				<key>CFBundleVersion</key>
+				<string>1.0.2</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunScriptAction</string>
+				<key>InputUUID</key>
+				<string>7257315C-C233-4EF6-947F-33432423D3A5</string>
+				<key>Keywords</key>
+				<array>
+					<string>執行</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>03AC5CEA-183F-493D-AD4C-5236564413C2</string>
+				<key>UUID</key>
+				<string>F76C90D6-78EF-4784-B42C-9E355BC39CD3</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<string>on run {input, parameters}
+	
+	(* Your script goes here *)
+	
+	return input
+end run</string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<true/>
+				<key>location</key>
+				<string>509.000000:585.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run AppleScript.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<true/>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict/>
+	<key>variables</key>
+	<array>
+		<dict>
+			<key>UUID</key>
+			<string>1E30F6CE-3435-4B48-9CC7-76C2018E98BB</string>
+			<key>identifier</key>
+			<string>com.apple.Automator.Variable.Storage</string>
+			<key>name</key>
+			<string>git_user_name</string>
+		</dict>
+		<dict>
+			<key>UUID</key>
+			<string>056338F9-CC47-4F76-BA4A-EA9439D1BBD8</string>
+			<key>identifier</key>
+			<string>com.apple.Automator.Variable.Storage</string>
+			<key>name</key>
+			<string>source_dir</string>
+		</dict>
+		<dict>
+			<key>UUID</key>
+			<string>34F6B588-4FEF-4FF2-99B3-B224DCE48C96</string>
+			<key>identifier</key>
+			<string>com.apple.Automator.Variable.Path</string>
+			<key>name</key>
+			<string>路徑</string>
+			<key>value</key>
+			<string>~/Desktop</string>
+		</dict>
+	</array>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.workflow</string>
+	</dict>
+</dict>
+</plist>
