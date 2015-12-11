@@ -480,8 +480,10 @@ def write_info_map(a_filepath, a_info_map):
     if directory != '' and not os.path.exists(directory):
         os.makedirs(directory)
 
+    sorted_info_map = OrderedDict(sorted(a_info_map.items()))
+
     f = io.open(a_filepath, 'wb')
-    for info_key in iter(a_info_map):
+    for info_key in iter(sorted_info_map):
         info = a_info_map[info_key]
         f.write("" + "ok" + ", " + info_key + ", " + info['set'] + ", " + info['type'] + ", " + json.dumps(_sort_json_key_in_list(info['images'])) + "\n")
     f.close()
