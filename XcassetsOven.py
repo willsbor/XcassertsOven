@@ -1,3 +1,4 @@
+import copy
 import getopt
 import ntpath
 import sys
@@ -336,7 +337,7 @@ def append_infos_into_content(a_sub_images, a_main_images, a_type):
         else:
             a_main_images.append(info)
 
-def create_xcassets_by_images(a_input_dir, a_result_dir, a_info_map, a_contents_map):
+def create_xcassets_by_images(a_input_dir, a_result_dir, a_info_map, a_contents_map, a_set_parameter_map):
     if os.path.exists(a_result_dir):
         shutil.rmtree(a_result_dir)
 
@@ -376,6 +377,10 @@ def create_xcassets_by_images(a_input_dir, a_result_dir, a_info_map, a_contents_
         content_file = a_result_dir + "/" + category_path + ".xcassets" + "/" + set_name + "." + set_type + "/Contents.json"
         if content_file not in a_contents_map:
             a_contents_map[content_file] = init_content(set_type)
+            p_key = set_name + "." + set_type
+            if p_key in a_set_parameter_map:
+                for pp_key in iter(a_set_parameter_map[p_key]):
+                    a_contents_map[content_file][pp_key] = a_set_parameter_map[p_key][pp_key]
         content = a_contents_map[content_file]
 
         # add image info into Contents.json
@@ -422,6 +427,7 @@ def parse_xcassets(a_input_dir, a_result_dir, info_file):
     all_image_files = find_image_file(a_input_dir)
 
     info_map = {}
+    set_parameter = {}
     # create sub xcassets dir
     for path in all_image_files:
         # get parent dir
@@ -442,6 +448,9 @@ def parse_xcassets(a_input_dir, a_result_dir, info_file):
         info['images'] = get_specific_filename(content_map[set_name], filename)
         info_map[filename] = info
 
+        # remember other setting for a set
+        set_parameter[set_name + "." + set_type] = content_map[set_name]
+
         if a_result_dir is not None:
             dst = a_result_dir + "/" + category + "/" + filename
             directory = os.path.dirname(dst)
@@ -449,7 +458,7 @@ def parse_xcassets(a_input_dir, a_result_dir, info_file):
                 os.makedirs(directory)
             shutil.copyfile(path, dst)
 
-    write_info_map(info_file, info_map)
+    write_info_map(info_file, info_map, set_parameter)
 
 def ascii_encode_dict(data):
     ascii_encode = lambda x: x.encode('ascii')
@@ -460,22 +469,26 @@ def read_info_map(a_filepath):
         return {}
 
     infos_map = {}
+    set_parameter_map = {}
     with open(a_filepath) as f:
         content = f.readlines()
         for line in content:
             line = line[:-1]  # remove \n
             infos = line.split(", ", 4)
             if len(infos) == 5:
-                infos_map[infos[1]] = {}
-                infos_map[infos[1]]["state"] = infos[0]
-                infos_map[infos[1]]["set"] = infos[2]
-                infos_map[infos[1]]["type"] = infos[3]
-                infos_map[infos[1]]["images"] = json.loads(infos[4]) #, object_hook=ascii_encode_dict
+                if infos[0] == "set-p":
+                    set_parameter_map[infos[1]] = json.loads(infos[4])
+                else:
+                    infos_map[infos[1]] = {}
+                    infos_map[infos[1]]["state"] = infos[0]
+                    infos_map[infos[1]]["set"] = infos[2]
+                    infos_map[infos[1]]["type"] = infos[3]
+                    infos_map[infos[1]]["images"] = json.loads(infos[4]) #, object_hook=ascii_encode_dict
             else:
                 print "false : [" + str(len(infos)) + "]" + line
-    return infos_map
+    return (infos_map, set_parameter_map)
 
-def write_info_map(a_filepath, a_info_map):
+def write_info_map(a_filepath, a_info_map, a_set_parameters):
     directory = os.path.dirname(a_filepath)
     if directory != '' and not os.path.exists(directory):
         os.makedirs(directory)
@@ -485,7 +498,24 @@ def write_info_map(a_filepath, a_info_map):
     f = io.open(a_filepath, 'wb')
     for info_key in iter(sorted_info_map):
         info = a_info_map[info_key]
-        f.write("" + "ok" + ", " + info_key + ", " + info['set'] + ", " + info['type'] + ", " + json.dumps(_sort_json_key_in_list(info['images'])) + "\n")
+        f.write("" + "ok" + ", "
+          + info_key + ", "
+          + info['set'] + ", "
+          + info['type'] + ", "
+          + json.dumps(_sort_json_key_in_list(info['images'])) + "\n")
+
+    sorted_set_parameters = OrderedDict(sorted(a_set_parameters.items()))
+    for key in iter(sorted_set_parameters):
+        content_json = a_set_parameters[key]
+        without_image = copy.copy(content_json)
+        if 'images' in without_image:
+            without_image.pop('images', None)
+        f.write("" + "set-p" + ", "
+          + key + ", "
+          + ", "
+          + ", "
+          + json.dumps(without_image) + "\n")
+    
     f.close()
 
 def json_dict_for_file_path(file_path):
@@ -547,11 +577,11 @@ def main(argv):
     print "info file = " + str(info_file)
 
     if command == "c":
-        info_map = read_info_map(info_file)
+        info_map, set_parameter_map = read_info_map(info_file)
         contents_map = {}
-        create_xcassets_by_images(images_dir, result_dir, info_map, contents_map)
+        create_xcassets_by_images(images_dir, result_dir, info_map, contents_map, set_parameter_map)
         create_contents_files(contents_map)
-        write_info_map(info_file, info_map)
+        write_info_map(info_file, info_map, set_parameter_map)
     elif command == "p":
         parse_xcassets(images_dir, result_dir, info_file)
     else:
