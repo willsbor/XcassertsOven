@@ -120,6 +120,11 @@ def init_content(a_type):
       "scale" : "2x"
     },
     {
+      "idiom" : "ipad",
+      "size" : "83.5x83.5",
+      "scale" : "2x"
+    },
+    {
       "idiom" : "mac",
       "size" : "16x16",
       "scale" : "1x"
@@ -275,6 +280,8 @@ def init_infos_content(a_type, a_filename, a_path):
         elif xsize == 76:
             infos.append(_info_by_size(a_filename, 'ipad', xsize, 1))
         elif xsize == 152:
+            infos.append(_info_by_size(a_filename, 'ipad', xsize, 2))
+        elif xsize == 167:   # ipad pro
             infos.append(_info_by_size(a_filename, 'ipad', xsize, 2))
         else:
             raise XcassetsOvenErrorException({"message": "size unsupport", "size": im.size})
